@@ -1,1 +1,16 @@
+An expansion mod for Experimental Infernum Extension.
+
+Experimental Infernum Extension Expansion adds boss intro presentations to many bosses that were previously missing them.
+
+What it does:
+- Adds intro cards to unsupported bosses
+- Generates fitting titles for bosses without dedicated text
+
+Requirements:
+- InfernumFables
+- CalamityFables
+- InfernumMode
+- CalamityMod
+
+This is an add-on mod. It does not work by itself.
 Adds generic boss name intros for bosses not covered by InfernumFables.
