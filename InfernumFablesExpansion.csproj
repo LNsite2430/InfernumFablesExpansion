@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<Import Project="..\tModLoader.targets" />
+
+	<ItemGroup>
+		<Reference Include="CalamityFables">
+			<HintPath>..\ModAssemblies\CalamityFables_v0.1.16.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="NPCs\" />
+		<Folder Include="Systems\" />
+	</ItemGroup>
+
+</Project>

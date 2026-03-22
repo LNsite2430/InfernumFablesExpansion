@@ -1,0 +1,1 @@
+Adds generic boss name intros for bosses not covered by InfernumFables.
