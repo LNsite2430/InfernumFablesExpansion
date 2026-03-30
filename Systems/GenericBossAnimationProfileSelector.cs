@@ -16,6 +16,18 @@ internal static class GenericBossAnimationProfileSelector
     public static AnimationProfile Select(NPC npc, Color accentColor)
     {
         string lowerName = npc.FullName.ToLowerInvariant();
+        string probe = $"{npc.ModNPC?.Name} {npc.FullName}".ToLowerInvariant();
+
+        if (ContainsAny(probe, "ares", "artemis", "apollo", "thanatos", "exomechdusa"))
+        {
+            return new AnimationProfile(
+                DelayTicks: 8,
+                Duration: 116,
+                EdgeOpacity: 0.68f,
+                NameBrighten: 0.62f,
+                NameSecondaryBrighten: 0.2f,
+                TitleBrightness: 0.95f);
+        }
 
         if (ContainsAny(lowerName, "worm", "wyrm", "serpent", "scourge", "devour", "eater"))
         {

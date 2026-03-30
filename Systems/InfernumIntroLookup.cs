@@ -10,12 +10,14 @@ namespace InfernumFablesExpansion.Systems;
 internal static class InfernumIntroLookup
 {
     private static Dictionary<string, string> titlesByBossName;
+    private static Dictionary<string, string> bossNamesByLookupKey;
     private static List<IntroEntry> introEntries;
     private static Dictionary<string, string> matchedBossNamesByLookupKey;
 
     public static void Clear()
     {
         titlesByBossName = null;
+        bossNamesByLookupKey = null;
         introEntries = null;
         matchedBossNamesByLookupKey = null;
     }
@@ -25,58 +27,88 @@ internal static class InfernumIntroLookup
         title = "";
         EnsureCache();
 
-        if (titlesByBossName is null || introEntries is null || matchedBossNamesByLookupKey is null)
+        if (titlesByBossName is null || bossNamesByLookupKey is null || introEntries is null || matchedBossNamesByLookupKey is null)
             return false;
 
         string fullName = npc.FullName;
         string normalizedFullName = NormalizeName(fullName);
-        if (titlesByBossName.TryGetValue(normalizedFullName, out title))
+        if (TryGetExactMatch(normalizedFullName, out title, out string matchedBossName))
         {
-            RememberMatchedBossName(normalizedFullName, fullName);
+            if (!ShouldAcceptMatchedBossNameForTitle(npc, matchedBossName))
+                title = "";
+            else
+            {
+            RememberMatchedBossName(normalizedFullName, matchedBossName);
             return true;
+            }
         }
 
         string compactFullName = CompactName(fullName);
-        if (titlesByBossName.TryGetValue(compactFullName, out title))
+        if (TryGetExactMatch(compactFullName, out title, out matchedBossName))
         {
-            RememberMatchedBossName(compactFullName, fullName);
+            if (!ShouldAcceptMatchedBossNameForTitle(npc, matchedBossName))
+                title = "";
+            else
+            {
+            RememberMatchedBossName(compactFullName, matchedBossName);
             return true;
+            }
         }
 
         string internalName = npc.ModNPC?.Name ?? "";
         if (!string.IsNullOrWhiteSpace(internalName))
         {
             string normalizedInternalName = NormalizeName(internalName);
-            if (titlesByBossName.TryGetValue(normalizedInternalName, out title))
+            if (TryGetExactMatch(normalizedInternalName, out title, out matchedBossName))
             {
-                RememberMatchedBossName(normalizedInternalName, fullName);
+                if (!ShouldAcceptMatchedBossNameForTitle(npc, matchedBossName))
+                    title = "";
+                else
+                {
+                RememberMatchedBossName(normalizedInternalName, matchedBossName);
                 return true;
+                }
             }
 
             string compactInternalName = CompactName(internalName);
-            if (titlesByBossName.TryGetValue(compactInternalName, out title))
+            if (TryGetExactMatch(compactInternalName, out title, out matchedBossName))
             {
-                RememberMatchedBossName(compactInternalName, fullName);
+                if (!ShouldAcceptMatchedBossNameForTitle(npc, matchedBossName))
+                    title = "";
+                else
+                {
+                RememberMatchedBossName(compactInternalName, matchedBossName);
                 return true;
+                }
             }
         }
 
         foreach (string alias in GetLookupAliases(npc))
         {
             string normalizedAlias = NormalizeName(alias);
-            if (titlesByBossName.TryGetValue(normalizedAlias, out title))
+            if (TryGetExactMatch(normalizedAlias, out title, out matchedBossName))
             {
-                RememberMatchedBossName(normalizedFullName, alias);
-                RememberMatchedBossName(compactFullName, alias);
+                if (!ShouldAcceptMatchedBossNameForTitle(npc, matchedBossName))
+                    title = "";
+                else
+                {
+                RememberMatchedBossName(normalizedFullName, matchedBossName);
+                RememberMatchedBossName(compactFullName, matchedBossName);
                 return true;
+                }
             }
 
             string compactAlias = CompactName(alias);
-            if (titlesByBossName.TryGetValue(compactAlias, out title))
+            if (TryGetExactMatch(compactAlias, out title, out matchedBossName))
             {
-                RememberMatchedBossName(normalizedFullName, alias);
-                RememberMatchedBossName(compactFullName, alias);
+                if (!ShouldAcceptMatchedBossNameForTitle(npc, matchedBossName))
+                    title = "";
+                else
+                {
+                RememberMatchedBossName(normalizedFullName, matchedBossName);
+                RememberMatchedBossName(compactFullName, matchedBossName);
                 return true;
+                }
             }
         }
 
@@ -85,6 +117,9 @@ internal static class InfernumIntroLookup
         {
             int score = ScoreEntryMatch(entry, normalizedFullName, compactFullName, internalName, npc);
             if (score <= bestScore)
+                continue;
+
+            if (!ShouldAcceptMatchedBossNameForTitle(npc, entry.BossName))
                 continue;
 
             bestScore = score;
@@ -133,7 +168,40 @@ internal static class InfernumIntroLookup
                 return matchedName;
         }
 
+        if (TryGetTitle(npc, out _))
+            return GetMatchedBossName(npc);
+
         return "";
+    }
+
+    private static bool ShouldAcceptMatchedBossNameForTitle(NPC npc, string matchedBossName)
+    {
+        if (string.IsNullOrWhiteSpace(matchedBossName))
+            return false;
+
+        if (!GenericBossDisplayNameResolver.TryGetIndependentBossId(npc, out string bossId))
+            return true;
+
+        if (bossId is "retinazer" or "spazmatism")
+            return true;
+
+        string normalized = NormalizeName(matchedBossName);
+        string[] collectiveMarkers =
+        {
+            "draedon",
+            "exo mechs",
+            "arsenal",
+            "twins",
+            " and "
+        };
+
+        foreach (string marker in collectiveMarkers)
+        {
+            if (normalized.Contains(marker))
+                return false;
+        }
+
+        return true;
     }
 
     private static void EnsureCache()
@@ -142,6 +210,7 @@ internal static class InfernumIntroLookup
             return;
 
         titlesByBossName = new Dictionary<string, string>();
+        bossNamesByLookupKey = new Dictionary<string, string>();
         introEntries = new List<IntroEntry>();
         matchedBossNamesByLookupKey = new Dictionary<string, string>();
 
@@ -177,9 +246,13 @@ internal static class InfernumIntroLookup
 
             if (!titlesByBossName.ContainsKey(normalizedName))
                 titlesByBossName[normalizedName] = title;
+            if (!bossNamesByLookupKey.ContainsKey(normalizedName))
+                bossNamesByLookupKey[normalizedName] = bossName;
 
             if (!titlesByBossName.ContainsKey(compactName))
                 titlesByBossName[compactName] = title;
+            if (!bossNamesByLookupKey.ContainsKey(compactName))
+                bossNamesByLookupKey[compactName] = bossName;
 
             RememberMatchedBossName(normalizedName, bossName);
             RememberMatchedBossName(compactName, bossName);
@@ -297,6 +370,44 @@ internal static class InfernumIntroLookup
             yield return "The Twins";
             yield return "Twins";
         }
+
+        if (npc.type is NPCID.WallofFlesh or NPCID.WallofFleshEye)
+        {
+            yield return "Wall of Flesh";
+            yield return "The Wall of Flesh";
+            yield return "WallofFlesh";
+        }
+
+        string probe = $"{npc.ModNPC?.Name} {npc.FullName}".ToLowerInvariant();
+
+        if (probe.Contains("slimegodcore") || probe.Contains("ebonianpaladin") || probe.Contains("crimulanpaladin"))
+        {
+            yield return "Slime God";
+            yield return "The Slime God";
+        }
+
+        if (probe.Contains("exomechdusa"))
+        {
+            yield return "Exo Mechs";
+            yield return "The Exo Mechs";
+            yield return "Draedon's Arsenal";
+        }
+    }
+
+    private static bool TryGetExactMatch(string lookupKey, out string title, out string bossName)
+    {
+        title = "";
+        bossName = "";
+
+        if (titlesByBossName is null || bossNamesByLookupKey is null)
+            return false;
+
+        if (!titlesByBossName.TryGetValue(lookupKey, out title))
+            return false;
+
+        bossNamesByLookupKey.TryGetValue(lookupKey, out bossName);
+        bossName ??= lookupKey;
+        return true;
     }
 
     private static int CountTokenMatches(string[] left, string[] right)

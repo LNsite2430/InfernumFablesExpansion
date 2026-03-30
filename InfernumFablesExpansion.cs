@@ -17,6 +17,7 @@ public sealed class InfernumFablesExpansion : Mod
         InfernumFablesReflection.Unload();
         GenericBossIntroPresentationSystem.Clear();
         GenericBossNameIntroGlobalNPC.ClearEncounterCache();
+        GenericBossNameIntroGlobalNPC.ClearPendingIntros();
         GenericBossNameIntroGlobalNPC.ClearColorCache();
     }
 }

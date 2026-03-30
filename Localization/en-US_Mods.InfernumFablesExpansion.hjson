@@ -1,1 +1,31 @@
 
+Configs: {
+	IntroCoverageMode: {
+		Tooltip: "Choose which bosses can use intro presentations."
+
+		CalamityAndInfernumOnly: {
+			Label: Calamity / Infernum Only
+			Tooltip: "Only bosses from Calamity or Infernum-related content can use intro presentations."
+		}
+
+		AllBossesOn: {
+			Label: All Bosses On
+			Tooltip: "Enable intro presentations for every supported boss."
+		}
+
+		AllBossesOff: {
+			Label: All Bosses Off
+			Tooltip: "Disable intro presentations for all bosses."
+		}
+	}
+
+	InfernumFablesExpansionConfig: {
+		DisplayName: Experimental Infernum Extension Expansion Config
+		Tooltip: ""
+
+		IntroCoverage: {
+			Label: Intro Coverage
+			Tooltip: "Choose whether intros should apply to all bosses, only Calamity / Infernum bosses, or no bosses at all."
+		}
+	}
+}

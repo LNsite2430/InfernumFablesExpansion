@@ -1,7 +1,7 @@
 name = ExperimentalInfernumExtensionExpansion
 displayName = Experimental Infernum Extension Expansion
 author = XcJP
-version = 0.0.2
+version = 0.0.3
 modReferences = InfernumFables, CalamityFables, InfernumMode, CalamityMod
 sortAfter = InfernumFables
 side = Both
